@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AttendX – Student Attendance Management System</title>
+  <meta name="description" content="A modern, premium Student Attendance Management System for schools and colleges. Track student attendance, generate reports, and manage classes with ease." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<!-- BACKGROUND BLOBS -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- ═══════════════════════════ LOGIN PAGE ═══════════════════════════ -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🎓</div>
+      <h1>AttendX</h1>
+      <p>Student Attendance Management System</p>
+    </div>
+
+    <div id="login-error" class="login-error">⚠️ Invalid username or password. Please try again.</div>
+
+    <div class="login-hint">
+      Default credentials: Username <span>admin</span> · Password <span>admin123</span>
+    </div>
+
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="login-form-group">
+        <label for="login-username">Username</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">👤</span>
+          <input id="login-username" class="login-input" type="text" placeholder="Enter your username" autocomplete="username" required />
+        </div>
+      </div>
+      <div class="login-form-group">
+        <label for="login-password">Password</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">🔒</span>
+          <input id="login-password" class="login-input" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+        </div>
+      </div>
+      <button type="submit" class="btn-login">Sign In →</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MAIN APP ═══════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🎓</div>
+      <div class="sidebar-logo-text">
+        <h2>AttendX</h2>
+        <p>Management System</p>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">Main Menu</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="navigate('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" id="nav-students" onclick="navigate('students')">
+      <span class="nav-icon">👨‍🎓</span> Students
+    </div>
+    <div class="nav-item" id="nav-attendance" onclick="navigate('attendance')">
+      <span class="nav-icon">✅</span> Attendance
+    </div>
+    <div class="nav-item" id="nav-reports" onclick="navigate('reports')">
+      <span class="nav-icon">📈</span> Reports
+    </div>
+
+    <div class="sidebar-section-label" style="margin-top:16px;">System</div>
+    <div class="nav-item" id="nav-settings" onclick="navigate('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details">
+          <h4>Admin</h4>
+          <p>Administrator</p>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">
+        <span>🚪</span> Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <h2 id="topbar-title">Dashboard</h2>
+        <p id="topbar-subtitle">Welcome back, Admin! Here's today's overview.</p>
+      </div>
+      <div class="topbar-actions">
+        <span id="topbar-date" style="font-size:13px;color:var(--text-secondary);"></span>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content-area">
+
+      <!-- ─── DASHBOARD VIEW ─── -->
+      <div id="view-dashboard" class="view active">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h3>Weekly Attendance Trend</h3>
+                <p>Attendance rate over the past 7 days</p>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h3>Class-wise Rate</h3>
+                <p>Today's attendance by class</p>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="classChart"></canvas></div>
+          </div>
+        </div>
+        <div class="recent-table-card">
+          <div class="recent-table-header">
+            <h3>Recent Attendance Records</h3>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('attendance')">Mark Today →</button>
+          </div>
+          <div id="recent-table-body"></div>
+        </div>
+      </div>
+
+      <!-- ─── STUDENTS VIEW ─── -->
+      <div id="view-students" class="view">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input id="student-search" class="search-input" type="text" placeholder="Search students..." oninput="renderStudents()" />
+              </div>
+              <select id="student-filter-class" class="filter-select" onchange="renderStudents()">
+                <option value="">All Classes</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="openStudentModal()">+ Add Student</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Roll No</th>
+                  <th>Class</th>
+                  <th>Email</th>
+                  <th>Attendance %</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="students-tbody"></tbody>
+            </table>
+          </div>
+          <div id="students-empty" class="empty-state" style="display:none;">
+            <div class="empty-state-icon">👨‍🎓</div>
+            <h3>No students found</h3>
+            <p>Try adjusting your search or add a new student.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── ATTENDANCE VIEW ─── -->
+      <div id="view-attendance" class="view">
+        <div class="att-controls">
+          <div class="form-group">
+            <label>Date</label>
+            <input id="att-date" type="date" class="form-control" onchange="renderAttendance()" />
+          </div>
+          <div class="form-group">
+            <label>Class</label>
+            <select id="att-class" class="form-control" onchange="renderAttendance()">
+              <option value="">All Classes</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-end;">
+            <button class="btn btn-primary" onclick="saveAttendance()">💾 Save Attendance</button>
+            <button class="btn btn-secondary" onclick="markAllPresent()">✅ Mark All Present</button>
+          </div>
+        </div>
+        <div id="att-roster" class="att-roster"></div>
+        <div id="att-empty" class="empty-state" style="display:none;">
+          <div class="empty-state-icon">👩‍🏫</div>
+          <h3>No students in this selection</h3>
+          <p>Add students first, then mark attendance.</p>
+        </div>
+      </div>
+
+      <!-- ─── REPORTS VIEW ─── -->
+      <div id="view-reports" class="view">
+        <div class="section-header">
+          <h3>Student-wise Attendance Summary</h3>
+          <button class="btn btn-success" onclick="exportCSV()">⬇️ Export CSV</button>
+        </div>
+        <div id="report-grid" class="report-grid"></div>
+        <div id="report-table-card" class="table-card" style="margin-top:24px;">
+          <div class="table-toolbar">
+            <h3 style="font-size:15px;font-weight:600;">Detailed Report</h3>
+            <select id="report-filter-class" class="filter-select" onchange="renderReports()">
+              <option value="">All Classes</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Class</th>
+                  <th>Total Days</th>
+                  <th>Present</th>
+                  <th>Absent</th>
+                  <th>Late</th>
+                  <th>Rate</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="report-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SETTINGS VIEW ─── -->
+      <div id="view-settings" class="view">
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>🏫 Manage Classes</h3>
+            <p>Add or remove classes/grades for your institution.</p>
+            <div id="class-list" class="class-list"></div>
+            <div style="display:flex;gap:8px;">
+              <input id="new-class-input" class="form-control" type="text" placeholder="e.g. Class 10-A" style="flex:1;" />
+              <button class="btn btn-primary" onclick="addClass()">Add</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h3>🔐 Change Password</h3>
+            <p>Update your admin account password.</p>
+            <div class="modal-form">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input id="curr-pass" type="password" class="form-control" placeholder="Current password" style="width:100%;" />
+              </div>
+              <div class="form-group" style="margin-top:12px;">
+                <label>New Password</label>
+                <input id="new-pass" type="password" class="form-control" placeholder="New password" style="width:100%;" />
+              </div>
+              <button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="changePassword()">Update Password</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h3>🗑️ Reset Data</h3>
+            <p>Clear all attendance records and student data. This action cannot be undone.</p>
+            <button class="btn btn-danger" onclick="resetData()">⚠️ Reset All Data</button>
+          </div>
+          <div class="settings-card">
+            <h3>ℹ️ About</h3>
+            <p>AttendX – Student Attendance Management System</p>
+            <p style="margin-top:8px;font-size:12px;">Version 1.0.0 · Built with HTML, CSS &amp; JavaScript</p>
+            <p style="margin-top:8px;font-size:12px;color:var(--accent-indigo-light);">All data is stored locally in your browser.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- ═══════════════════════════ STUDENT MODAL ═══════════════════════════ -->
+<div id="student-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Add Student</h3>
+      <button class="modal-close" onclick="closeStudentModal()">✕</button>
+    </div>
+    <div class="modal-form">
+      <input type="hidden" id="modal-student-id" />
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input id="modal-name" class="form-control" type="text" placeholder="e.g. Aarav Sharma" style="width:100%;" />
+      </div>
+      <div class="form-group" style="margin-top:14px;">
+        <label>Roll Number *</label>
+        <input id="modal-roll" class="form-control" type="text" placeholder="e.g. 2024001" style="width:100%;" />
+      </div>
+      <div class="form-group" style="margin-top:14px;">
+        <label>Class *</label>
+        <select id="modal-class" class="form-control" style="width:100%;"></select>
+      </div>
+      <div class="form-group" style="margin-top:14px;">
+        <label>Email</label>
+        <input id="modal-email" class="form-control" type="email" placeholder="e.g. student@school.edu" style="width:100%;" />
+      </div>
+      <div class="form-group" style="margin-top:14px;">
+        <label>Phone</label>
+        <input id="modal-phone" class="form-control" type="tel" placeholder="e.g. +91 9876543210" style="width:100%;" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeStudentModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
